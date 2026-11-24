@@ -1,19 +1,3 @@
-/*
-===============================================================================
-DDL Script: Create Gold Views
-===============================================================================
-Script Purpose:
-    This script creates views for the Gold layer in the data warehouse. 
-
-    Each view performs transformations and combines data from the Silver layer 
-    to produce a clean, enriched, and business-ready dataset.
-
-Usage:
-    - These views can be queried directly for analytics and reporting.
-===============================================================================
-*/
-
-
 DROP VIEW IF EXISTS gold.attractions;
 CREATE VIEW gold.attractions AS
 SELECT 
@@ -55,11 +39,9 @@ SELECT
 FROM silver.planet_osm_point AS po
 WHERE po.tourism IN (
         'motel',
-        'information',
         'hotel',
         'hostel',
-        'guest_house',
-        'apartment'
+        'guest_house'
     );
 
 
