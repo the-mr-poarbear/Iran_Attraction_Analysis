@@ -48,25 +48,43 @@ BEGIN
 	SELECT
 	    osm_id,
 	    -- Aerialway
-	    NULLIF(TRIM(aerialway), '') AS aerialway,
+	    CASE
+		    WHEN LOWER(TRIM(aerialway)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(aerialway)
+		END AS aerialway,
 	
 	    -- Aeroway
-	    NULLIF(TRIM(aeroway), '') AS aeroway,
+	    CASE
+		    WHEN LOWER(TRIM(aeroway)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(aeroway)
+		END AS aeroway,
 	
 	    -- Amenity
 	    NULLIF(TRIM(amenity), '') AS amenity,
 	
 	    -- Highway
-	    NULLIF(TRIM(highway), '') AS highway,
+	    CASE
+		    WHEN LOWER(TRIM(highway)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(highway)
+		END AS highway,
 	
 	    -- Junction
-	    NULLIF(TRIM(junction), '') AS junction,
+	    CASE
+		    WHEN LOWER(TRIM(junction)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(junction)
+		END AS junction,
 	
 	    -- Railway
-	    NULLIF(TRIM(railway), '') AS railway,
+		CASE
+		    WHEN LOWER(TRIM(railway)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(railway)
+		END AS railway,
 	
 	    -- Tunnel: preserve valid yes/no values
-	    NULLIF(TRIM(tunnel), '') AS tunnel,
+	    CASE
+		    WHEN LOWER(TRIM(tunnel)) IN ('', 'no') THEN NULL
+		    ELSE TRIM(tunnel)
+		END AS tunnel,
 	
 	    way,
 	    -- Name
