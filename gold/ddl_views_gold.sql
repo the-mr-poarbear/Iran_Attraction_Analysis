@@ -118,3 +118,53 @@ WHERE tunnel IS NOT NULL
 	OR aeroway IS NOT NULL 
 	OR aerialway IS NOT NULL;
 
+
+
+DROP TABLE IF EXISTS gold.grid_cells;
+CREATE TABLE gold.grid_cells (
+    grid_id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    grid_i  INTEGER,
+    grid_j  INTEGER,
+    geom    GEOMETRY(Polygon, 6933)
+);
+
+WITH iran AS (
+    SELECT
+        ST_Transform(
+            ST_MakeValid(way),
+            6933
+        ) AS geom
+    FROM public.planet_osm_polygon
+    WHERE name = 'ایران'
+),
+grid AS (
+    SELECT
+        s.i,
+        s.j,
+        s.geom
+    FROM iran
+    CROSS JOIN LATERAL
+        ST_SquareGrid(
+            20000,
+            ST_Envelope(iran.geom)
+        ) AS s
+)
+INSERT INTO gold.grid_cells (
+    grid_i,
+    grid_j,
+    geom
+)
+SELECT
+    g.i,
+    g.j,
+    g.geom
+FROM grid g
+CROSS JOIN iran i
+WHERE ST_Intersects(g.geom, i.geom);
+
+
+CREATE INDEX idx_grid_cells_geom
+ON gold.grid_cells
+USING GIST (geom);
+
+
