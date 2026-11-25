@@ -7,8 +7,9 @@ SELECT
     po.way AS geom,
 
     CASE
-        WHEN po.historic IS NOT NULL AND po.historic NOT IN ('yes', 'yes;used') THEN po.historic
-		WHEN po.religion IS NOT NULL AND po.religion NOT IN ('none') THEN po.religion
+		WHEN po.natural IS NOT NULL AND (po.natural IN ('wood', 'hot_spring')) THEN po.natural
+        WHEN po.historic IS NOT NULL AND po.historic NOT IN ('yes', 'yes;used') AND po.tourism IS NOT NULL THEN po.historic
+		WHEN po.religion IS NOT NULL AND po.religion NOT IN ('none') AND po.tourism IS NOT NULL THEN po.religion
         WHEN po.tourism IS NOT NULL AND  po.tourism NOT IN ('yes') THEN po.tourism
         ELSE 'n/a'
     END AS category
@@ -16,6 +17,7 @@ SELECT
 FROM silver.planet_osm_point AS po
 WHERE po.historic IS NOT NULL OR 
 	po.religion IS NOT NULL OR 
+	po.natural IS NOT NULL OR 
 	(po.tourism IS NOT NULL AND 
 	(po.tourism NOT IN (
         'motel',
