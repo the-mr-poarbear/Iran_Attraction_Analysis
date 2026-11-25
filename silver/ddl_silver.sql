@@ -18,6 +18,7 @@ DROP TABLE IF EXISTS silver.planet_osm_polygon CASCADE;
 
 CREATE TABLE silver.planet_osm_polygon (
     osm_id      BIGINT,
+	admin_level TEXT,
     way         GEOMETRY(Geometry,4326),
     name        TEXT
 );
@@ -36,7 +37,8 @@ CREATE TABLE silver.planet_osm_point (
     service     TEXT,
 	"natural"   TEXT,
     tourism     TEXT,
-    way         GEOMETRY(Point, 4326)
+    way         GEOMETRY(Point, 4326),
+	admin_level TEXT
 );
 
 
