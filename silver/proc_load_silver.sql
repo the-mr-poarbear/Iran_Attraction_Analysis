@@ -7,10 +7,14 @@
 -- Accepts no parameters 
 -- Usage: CALL silver.load_silver();
 -- =============================================================
+-- PROCEDURE: silver.load_silver()
 
-CREATE OR REPLACE PROCEDURE silver.load_silver()
-LANGUAGE plpgsql
-AS $$
+-- DROP PROCEDURE IF EXISTS silver.load_silver();
+
+CREATE OR REPLACE PROCEDURE silver.load_silver(
+	)
+LANGUAGE 'plpgsql'
+AS $BODY$
 DECLARE
     start_time TIMESTAMP;
     end_time TIMESTAMP;
@@ -110,6 +114,7 @@ BEGIN
 	    population,
 	    religion,
 	    service,
+		"natural",
 	    tourism,
 	    way
 	)
@@ -127,6 +132,7 @@ BEGIN
 	    END,
 	    NULLIF(TRIM(p.religion), ''),
 	    NULLIF(TRIM(p.service), ''),
+		NULLIF(TRIM(p.natural), ''),
 	    NULLIF(TRIM(p.tourism), ''),
 	    p.way
 	FROM public.planet_osm_point p
@@ -153,7 +159,6 @@ BEGIN
     RAISE NOTICE 'planet_osm_point loaded successfully';
     RAISE NOTICE 'Load Duration: % seconds',
         EXTRACT(EPOCH FROM (end_time - start_time));
-
 
 	start_time := clock_timestamp();
 	RAISE NOTICE '>> Truncating planet_osm_polygon';
@@ -190,5 +195,6 @@ BEGIN
 	
 	        RAISE;
 END;
-$$;
-	
+$BODY$;
+
+
