@@ -7,11 +7,6 @@
 -- Accepts no parameters 
 -- Usage: CALL silver.load_silver();
 -- =============================================================
--- PROCEDURE: silver.load_silver()
-
--- DROP PROCEDURE IF EXISTS silver.load_silver();
-
-
 CREATE OR REPLACE PROCEDURE silver.load_silver(
 	)
 LANGUAGE 'plpgsql'
