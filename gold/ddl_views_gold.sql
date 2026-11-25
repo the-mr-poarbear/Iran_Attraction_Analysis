@@ -62,7 +62,8 @@ SELECT
     po.osm_id,
     po.name,
     po.way AS geom,
-    po.place AS category
+    po.place AS category,
+	po.admin_level
 	
 FROM silver.planet_osm_point AS po
 WHERE po.place IN (
@@ -97,10 +98,12 @@ SELECT
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
     po.name,
-    po.way AS geom
+    po.way AS geom,
+	po.admin_level
 
 	
-FROM silver.planet_osm_polygon AS po;
+FROM silver.planet_osm_polygon AS po
+WHERE po.admin_level ='4';
 
 DROP VIEW IF EXISTS gold.ways;
 CREATE VIEW gold.ways AS
@@ -175,6 +178,105 @@ WHERE ST_Intersects(g.geom, i.geom);
 
 CREATE INDEX idx_grid_cells_geom
 ON gold.grid_cells
+USING GIST (geom);
+
+
+DROP TABLE IF EXISTS gold.grid_statistics;
+CREATE TABLE gold.grid_statistics AS
+
+WITH attraction_stats AS (
+    SELECT
+        g.grid_id,
+        COUNT(*) AS total_attractions,
+        COUNT(*) FILTER (
+            WHERE a.category = 'historic'
+        ) AS historical_attractions,
+
+        COUNT(*) FILTER (
+            WHERE a.category = 'natural'
+        ) AS natural_attractions,
+
+        COUNT(*) FILTER (
+            WHERE a.category = 'religion'
+        ) AS religious_attractions
+
+    FROM gold.grid_cells g
+    JOIN gold.attractions a
+        ON ST_Intersects(
+            g.geom,
+            ST_Transform(a.geom, 6933)
+        )
+    GROUP BY g.grid_id
+),
+
+accommodation_stats AS (
+    SELECT
+        g.grid_id,
+        COUNT(*) AS total_accommodations
+
+    FROM gold.grid_cells g
+    JOIN gold.accommodations a
+        ON ST_Intersects(
+            g.geom,
+            ST_Transform(a.geom, 6933)
+        )
+    GROUP BY g.grid_id
+),
+
+restaurant_stats AS (
+    SELECT
+        g.grid_id,
+        COUNT(*) AS total_restaurants
+
+    FROM gold.grid_cells g
+    JOIN gold.services s
+        ON ST_Intersects(
+            g.geom,
+            ST_Transform(s.geom, 6933)
+        )
+    WHERE s.category = 'restaurant'
+    GROUP BY g.grid_id
+)
+
+SELECT
+    g.grid_id,
+    g.grid_i,
+    g.grid_j,
+
+    COALESCE(a.total_attractions, 0)
+        AS total_attractions,
+
+    COALESCE(a.historical_attractions, 0)
+        AS historical_attractions,
+
+    COALESCE(a.natural_attractions, 0)
+        AS natural_attractions,
+
+    COALESCE(a.religious_attractions, 0)
+        AS religious_attractions,
+
+    COALESCE(h.total_accommodations, 0)
+        AS total_accommodations,
+
+    COALESCE(r.total_restaurants, 0)
+        AS total_restaurants,
+
+    g.geom
+
+FROM gold.grid_cells g
+
+LEFT JOIN attraction_stats a
+    ON g.grid_id = a.grid_id
+
+LEFT JOIN accommodation_stats h
+    ON g.grid_id = h.grid_id
+
+LEFT JOIN restaurant_stats r
+    ON g.grid_id = r.grid_id;
+
+
+CREATE INDEX idx_grid_statistics_geom
+ON gold.grid_statistics
 USING GIST (geom);
 
 
