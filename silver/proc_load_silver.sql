@@ -11,6 +11,7 @@
 
 -- DROP PROCEDURE IF EXISTS silver.load_silver();
 
+
 CREATE OR REPLACE PROCEDURE silver.load_silver(
 	)
 LANGUAGE 'plpgsql'
@@ -116,7 +117,8 @@ BEGIN
 	    service,
 		"natural",
 	    tourism,
-	    way
+	    way,
+		admin_level
 	)
 	SELECT
 	    p.osm_id,
@@ -134,7 +136,8 @@ BEGIN
 	    NULLIF(TRIM(p.service), ''),
 		NULLIF(TRIM(p.natural), ''),
 	    NULLIF(TRIM(p.tourism), ''),
-	    p.way
+	    p.way,
+		admin_level
 	FROM public.planet_osm_point p
 	CROSS JOIN LATERAL (
 	    SELECT TRANSLATE(
@@ -168,14 +171,15 @@ BEGIN
 	INSERT INTO silver.planet_osm_polygon(
 	    osm_id,
 	    name,
+		admin_level,
 		way
 	)
 	SELECT
 	    osm_id,
 	    NULLIF(TRIM(name), '') AS name,
+		NULLIF(TRIM(admin_level), '') AS admin_level, 
 	    way
-	FROM public.planet_osm_polygon
-	WHERE place ='province';
+	FROM public.planet_osm_polygon;
 
 	end_time := clock_timestamp();
 
