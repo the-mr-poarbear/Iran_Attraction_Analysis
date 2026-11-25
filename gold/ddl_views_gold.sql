@@ -34,7 +34,9 @@ WHERE (po.historic IS NOT NULL OR
         'hostel',
         'guest_house',
         'apartment'
-    )));
+    ))
+	OR po.natural IN ('wood', 'hot_spring')
+	);
 	
 
 DROP VIEW IF EXISTS gold.accommodations;
@@ -278,5 +280,4 @@ LEFT JOIN restaurant_stats r
 CREATE INDEX idx_grid_statistics_geom
 ON gold.grid_statistics
 USING GIST (geom);
-
 
