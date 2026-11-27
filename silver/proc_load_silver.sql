@@ -182,6 +182,18 @@ BEGIN
     RAISE NOTICE 'Load Duration: % seconds',
         EXTRACT(EPOCH FROM (end_time - start_time));
 
+	-- Filtered entities
+	REFRESH MATERIALIZED VIEW gold.attractions;
+	REFRESH MATERIALIZED VIEW gold.accommodations;
+	REFRESH MATERIALIZED VIEW gold.residential_area;
+	REFRESH MATERIALIZED VIEW gold.services;
+	REFRESH MATERIALIZED VIEW gold.provinces;
+	REFRESH MATERIALIZED VIEW gold.ways;
+	
+	-- Derived spatial data
+	REFRESH MATERIALIZED VIEW gold.accommodation_range;
+	REFRESH MATERIALIZED VIEW gold.restaurant_range;
+
     RAISE NOTICE '===============================';
     RAISE NOTICE 'Silver layer load completed! Whole process took % seconds' , end_bronze - start_bronze;
     RAISE NOTICE '===============================';
@@ -193,6 +205,7 @@ BEGIN
 	        RAISE NOTICE '===============================';
 	
 	        RAISE;
+			
 END;
 $BODY$;
 
