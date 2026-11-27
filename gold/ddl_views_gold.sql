@@ -1,5 +1,5 @@
-DROP VIEW IF EXISTS gold.attractions;
-CREATE VIEW gold.attractions AS
+DROP MATERIALIZED VIEW IF EXISTS gold.attractions;
+CREATE MATERIALIZED VIEW gold.attractions AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
@@ -39,8 +39,8 @@ WHERE (po.historic IS NOT NULL OR
 	);
 	
 
-DROP VIEW IF EXISTS gold.accommodations;
-CREATE VIEW gold.accommodations AS
+DROP MATERIALIZED VIEW IF EXISTS gold.accommodations;
+CREATE MATERIALIZED VIEW gold.accommodations AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
@@ -57,8 +57,8 @@ WHERE po.tourism IN (
     );
 
 
-DROP VIEW IF EXISTS gold.residential_area;
-CREATE VIEW gold.residential_area AS
+DROP MATERIALIZED VIEW IF EXISTS gold.residential_area;
+CREATE MATERIALIZED VIEW gold.residential_area AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
@@ -77,8 +77,8 @@ WHERE po.place IN (
     );
 
 
-DROP VIEW IF EXISTS gold.services;
-CREATE VIEW gold.services AS
+DROP MATERIALIZED VIEW IF EXISTS gold.services;
+CREATE MATERIALIZED VIEW gold.services AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
@@ -94,8 +94,8 @@ WHERE po.amenity IN (
 	'restaurant'
     );
 
-DROP VIEW IF EXISTS gold.provinces;
-CREATE VIEW gold.provinces AS
+DROP MATERIALIZED VIEW IF EXISTS gold.provinces;
+CREATE MATERIALIZED VIEW gold.provinces AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY po.osm_id) AS id,
     po.osm_id,
@@ -107,8 +107,8 @@ SELECT
 FROM silver.planet_osm_polygon AS po
 WHERE po.admin_level ='4';
 
-DROP VIEW IF EXISTS gold.ways;
-CREATE VIEW gold.ways AS
+DROP MATERIALIZED VIEW IF EXISTS gold.ways;
+CREATE MATERIALIZED VIEW gold.ways AS
 SELECT 
     ROW_NUMBER() OVER (ORDER BY li.osm_id) AS id,
     li.osm_id,
@@ -133,6 +133,28 @@ WHERE tunnel IS NOT NULL
 	OR aeroway IS NOT NULL 
 	OR aerialway IS NOT NULL;
 
+
+DROP MATERIALIZED VIEW IF EXISTS gold.accommodation_range CASCADE;
+
+CREATE MATERIALIZED VIEW gold.accommodation_range AS
+SELECT
+    id,
+    osm_id,
+    name,
+    ST_Buffer(geom::geography, 5000)::geometry AS geom
+FROM gold.accommodations;
+
+
+DROP MATERIALIZED VIEW IF EXISTS gold.restaurant_range CASCADE;
+
+CREATE MATERIALIZED VIEW gold.restaurant_range AS
+SELECT
+    id,
+    osm_id,
+    name,
+    ST_Buffer(geom::geography, 5000)::geometry AS geom
+FROM gold.services
+WHERE category = 'restaurant';
 
 
 DROP TABLE IF EXISTS gold.grid_cells;
@@ -280,4 +302,45 @@ LEFT JOIN restaurant_stats r
 CREATE INDEX idx_grid_statistics_geom
 ON gold.grid_statistics
 USING GIST (geom);
+
+-- Attractions
+CREATE INDEX idx_attractions_geom
+ON gold.attractions USING GIST (geom);
+
+CREATE INDEX idx_attractions_category
+ON gold.attractions (category);
+
+
+-- Accommodations
+CREATE INDEX idx_accommodations_geom
+ON gold.accommodations USING GIST (geom);
+
+
+-- Residential areas
+CREATE INDEX idx_residential_area_geom
+ON gold.residential_area USING GIST (geom);
+
+
+-- Services
+CREATE INDEX idx_services_geom
+ON gold.services USING GIST (geom);
+
+CREATE INDEX idx_services_category
+ON gold.services (category);
+
+
+-- Provinces
+CREATE INDEX idx_provinces_geom
+ON gold.provinces USING GIST (geom);
+
+
+-- Ways
+CREATE INDEX idx_ways_geom
+ON gold.ways USING GIST (geom);
+
+CREATE INDEX idx_restaurant_range_geom
+ON gold.restaurant_range USING GIST (geom);
+
+CREATE INDEX idx_accommodation_range_geom
+ON gold.accommodation_range USING GIST (geom);
 
